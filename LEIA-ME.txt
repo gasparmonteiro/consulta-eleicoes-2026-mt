@@ -1,0 +1,23 @@
+CONSULTA ELEIÇÕES 2026 · MATO GROSSO · V01
+
+Projeto independente do Observatório Eleitoral V01.8.
+Não altera nenhum arquivo ou dado do projeto histórico.
+
+Navegação:
+Cargo → Candidato → votação nos 142 municípios.
+
+Recursos:
+- lista de candidatos ordenada pela votação total em MT;
+- total estadual por candidato;
+- votação por município;
+- percentual oficial TSE por município;
+- busca de candidato e município;
+- ordenação por município, votos e percentual;
+- botões HOME e Voltar;
+- layout responsivo.
+
+Dados de origem:
+Votacao_Nominal_MT_2026.csv, gerado a partir dos resultados do TSE.
+
+Publicação no GitHub Pages:
+Envie o conteúdo desta pasta para a raiz de um repositório e habilite GitHub Pages na branch main.
