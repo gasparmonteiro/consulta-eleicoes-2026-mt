@@ -8,10 +8,11 @@ const state={cand:'',mun:''}; let sort={key:'votos',dir:'desc'};
 async function init(){
  [catalog,munNames]=await Promise.all([fetch('dados/catalogo.json').then(r=>r.json()),fetch('dados/municipios.json').then(r=>r.json())]);
  cargoSel.innerHTML='<option value="">Escolha o cargo</option>'+catalog.cargos.map((c,i)=>`<option value="${i}">${c.nome}</option>`).join('');
- munSel.innerHTML='<option value="">Todos os municípios</option>'+Object.entries(munNames).map(([k,v])=>`<option value="${k}">${v}</option>`).join('');
+ munSel.innerHTML='<option value="">Todos os municípios</option>'+Object.entries(munNames).sort((a,b)=>a[1].localeCompare(b[1],'pt-BR')).map(([k,v])=>`<option value="${k}">${v}</option>`).join('');
 }
 function reset(all=true){state.cand='';state.mun='';history=[];details=null; candSel.value='';munSel.value='';busca.value='';voltar.classList.add('hidden'); if(all){cargoSel.value='';data=null;candSel.disabled=true;munSel.disabled=true;intro.classList.remove('hidden');toolbar.classList.add('hidden');conteudo.classList.add('hidden');resumo.innerHTML='';}}
 async function loadCargo(){
+ busca.oninput=render;
  if(cargoSel.value===''){reset(true);return} reset(false); intro.classList.add('hidden');conteudo.classList.remove('hidden');toolbar.classList.remove('hidden');conteudo.innerHTML='<div class="loading">Carregando...</div>';
  const c=catalog.cargos[+cargoSel.value]; data=await fetch(c.arquivo).then(r=>r.json());
  candSel.disabled=false;munSel.disabled=false;
@@ -19,7 +20,7 @@ async function loadCargo(){
  render();
 }
 function snapshot(){return {cand:state.cand,mun:state.mun}}
-function setState(next,push=true){if(push && (state.cand!==next.cand||state.mun!==next.mun)) history.push(snapshot()); state.cand=next.cand||'';state.mun=next.mun||'';candSel.value=state.cand;munSel.value=state.mun;busca.value='';details=null;render();}
+function setState(next,push=true){busca.oninput=render;if(push && (state.cand!==next.cand||state.mun!==next.mun)) history.push(snapshot()); state.cand=next.cand||'';state.mun=next.mun||'';candSel.value=state.cand;munSel.value=state.mun;busca.value='';details=null;render();}
 function currentCandidate(){return data?.candidatos.find(c=>String(c.id)===String(state.cand))}
 function indicator(k){return sort.key===k?(sort.dir==='asc'?' ▲':' ▼'):''}
 function toggle(k,def){if(sort.key===k)sort.dir=sort.dir==='asc'?'desc':'asc';else{sort.key=k;sort.dir=def}render();}
@@ -46,14 +47,30 @@ function renderMunicipioCandidates(){
  conteudo.innerHTML=`<div class="list-title"><h2>Candidatos votados em ${munNames[state.mun]}</h2><p>Clique no candidato para abrir seu detalhamento neste município.</p></div><div class="table-head"><div>#</div><div>Candidato</div><div style="text-align:right">Votos</div><div style="text-align:right">%</div></div>`+candidateRows(arr);bindClicks();
 }
 async function renderCandidateMunicipio(){
- const c=currentCandidate();busca.placeholder='Buscar local de votação...';titleKpis([['CANDIDATO',c.urna||c.nome,`${c.numero} · ${c.partido}`],['MUNICÍPIO',munNames[state.mun]],['TOTAL NO MUNICÍPIO',fmt((data.resultados.find(r=>String(r[0])===state.cand&&String(r[1])===state.mun)||[])[4]||0)]]);
- conteudo.innerHTML='<div class="loading">Carregando detalhamento por local e seção...</div>';
+ const c=currentCandidate();busca.placeholder='Buscar bairro ou local de votação...';titleKpis([['CANDIDATO',c.urna||c.nome,`${c.numero} · ${c.partido}`],['MUNICÍPIO',munNames[state.mun]],['TOTAL NO MUNICÍPIO',fmt((data.resultados.find(r=>String(r[0])===state.cand&&String(r[1])===state.mun)||[])[4]||0)]]);
+ conteudo.innerHTML='<div class="loading">Carregando detalhamento territorial...</div>';
  if(!details){const cf=catalog.cargos[+cargoSel.value];details=await fetch(cf.detalhes).then(r=>r.json())}
- let rows=(details[state.cand]?.[state.mun]||[]).filter(r=>qmatch(`${r[0]} ${r[1]} ${r[2]}`));
- const groups=new Map();for(const r of rows){const k=`${r[3]}|${r[0]}`;if(!groups.has(k))groups.set(k,{z:r[3],l:r[0],n:r[1],b:r[2],v:0,s:[]});const g=groups.get(k);g.v+=Number(r[5]);g.s.push(r)}
- const gs=[...groups.values()].sort((a,b)=>b.v-a.v||a.n.localeCompare(b.n,'pt-BR'));
- conteudo.innerHTML=`<div class="list-title"><h2>Locais de votação</h2><p>Clique em um local para visualizar os votos por seção.</p></div>`+(gs.length?gs.map((g,i)=>`<div class="local-block"><div class="local-row" data-local="L${i}"><div><div class="name linkname">${g.n||'Local '+g.l}</div><div class="sub">Local ${g.l} · Zona ${g.z}${g.b?' · '+g.b:''}</div></div><div class="votes">${fmt(g.v)} votos</div></div><div id="L${i}" class="sections hidden">${g.s.map(s=>`<div class="section-row"><span>Seção ${s[4]}</span><strong>${fmt(s[5])} votos</strong></div>`).join('')}</div></div>`).join(''):'<div class="empty">Nenhum voto nominal encontrado.</div>');
- conteudo.querySelectorAll('[data-local]').forEach(x=>x.onclick=()=>$(x.dataset.local).classList.toggle('hidden'));
+ const allRows=(details[state.cand]?.[state.mun]||[]);
+ let territorialTab='bairro';
+ function localGroups(rows){
+  const groups=new Map();for(const r of rows){const k=`${r[3]}|${r[0]}`;if(!groups.has(k))groups.set(k,{z:r[3],l:r[0],n:r[1],b:r[2]||'SEM BAIRRO INFORMADO',v:0,s:[]});const g=groups.get(k);g.v+=Number(r[5]);g.s.push(r)}
+  return [...groups.values()].sort((a,b)=>b.v-a.v||a.n.localeCompare(b.n,'pt-BR'));
+ }
+ function sections(g){return `<div class="sections hidden">${g.s.sort((a,b)=>Number(a[4])-Number(b[4])).map(s=>`<div class="section-row"><span>Seção ${s[4]}</span><strong>${fmt(s[5])} votos</strong></div>`).join('')}</div>`}
+ function localBlock(g){return `<div class="local-block"><div class="local-row toggle-next"><div><div class="name linkname">${g.n||'Local '+g.l}</div><div class="sub">Local ${g.l} · Zona ${g.z} · ${g.b}</div></div><div class="votes">${fmt(g.v)} votos <span class="chev">⌄</span></div></div>${sections(g)}</div>`}
+ function draw(){
+  const q=busca.value.trim().toLocaleUpperCase('pt-BR');
+  const rows=allRows.filter(r=>!q||`${r[2]} ${r[1]} ${r[0]}`.toLocaleUpperCase('pt-BR').includes(q));
+  const gs=localGroups(rows);
+  const bairroMap=new Map();for(const g of gs){const b=g.b||'SEM BAIRRO INFORMADO';if(!bairroMap.has(b))bairroMap.set(b,{b,v:0,locais:[]});const x=bairroMap.get(b);x.v+=g.v;x.locais.push(g)}
+  const bairros=[...bairroMap.values()].sort((a,b)=>b.v-a.v||a.b.localeCompare(b.b,'pt-BR'));
+  const body=territorialTab==='bairro' ? (bairros.length?bairros.map(x=>`<div class="bairro-block"><div class="bairro-row toggle-next"><div><div class="name linkname">${x.b}</div><div class="sub">${x.locais.length} local(is)</div></div><div class="votes">${fmt(x.v)} <span class="chev">⌄</span></div></div><div class="bairro-locais hidden">${x.locais.map(localBlock).join('')}</div></div>`).join(''):'<div class="empty">Nenhum bairro encontrado.</div>') : (gs.length?gs.map(localBlock).join(''):'<div class="empty">Nenhum local encontrado.</div>');
+  conteudo.innerHTML=`<div class="list-title"><h2>Detalhamento territorial</h2><p>Bairro → Local de votação → Seção</p></div><div class="territorial-tabs"><button data-tab="bairro" class="${territorialTab==='bairro'?'active':''}">🏘️ Bairros</button><button data-tab="local" class="${territorialTab==='local'?'active':''}">🏫 Locais de votação</button></div>${body}`;
+  conteudo.querySelectorAll('[data-tab]').forEach(x=>x.onclick=()=>{territorialTab=x.dataset.tab;draw()});
+  conteudo.querySelectorAll('.toggle-next').forEach(x=>x.onclick=()=>{const next=x.nextElementSibling;if(next)next.classList.toggle('hidden')});
+ }
+ draw();
+ busca.oninput=draw;
 }
 function bindClicks(){conteudo.querySelectorAll('[data-cand]').forEach(x=>x.onclick=()=>setState({cand:x.dataset.cand,mun:state.mun}));conteudo.querySelectorAll('[data-mun]').forEach(x=>x.onclick=()=>setState({cand:state.cand,mun:x.dataset.mun}));conteudo.querySelectorAll('[data-sort]').forEach(x=>x.onclick=()=>toggle(x.dataset.sort,x.dataset.sort==='municipio'?'asc':'desc'));}
 cargoSel.onchange=loadCargo;candSel.onchange=()=>setState({cand:candSel.value,mun:state.mun});munSel.onchange=()=>setState({cand:state.cand,mun:munSel.value});busca.oninput=render;
