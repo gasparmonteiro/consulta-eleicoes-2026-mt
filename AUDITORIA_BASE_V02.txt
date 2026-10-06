@@ -1,0 +1,6 @@
+Seções no cadastro 2026: 8975
+Municípios cadastro: 142
+Registros nominais positivos detalhados: 723736
+Chaves candidato-município: 28481
+Divergências com totais municipais existentes: 0
+Registros sem local correspondente: 0

@@ -1,0 +1,19 @@
+CONSULTA ELEIÇÕES 2026 MT - V02.0
+
+Nova lógica:
+- Cargo: obrigatório.
+- Candidato e Município: opcionais e independentes.
+- Cargo -> todos os candidatos e total MT.
+- Cargo + Candidato -> municípios onde teve votos.
+- Cargo + Município -> candidatos com votos no município.
+- Cargo + Candidato + Município -> Local de votação -> Seção.
+- Clique no candidato equivale ao filtro Candidato.
+- Clique no município equivale ao filtro Município.
+- VOLTAR retorna ao estado anterior; HOME reinicia.
+
+Fontes incorporadas:
+- Votação nominal MT 2026.
+- BU 2026 extraído pela V04.
+- eleitorado_local_votacao_2026_MT.xlsx para nomes de locais/bairros e vínculo territorial do mesmo ano.
+
+Auditoria de geração: AUDITORIA_BASE_V02.txt.
