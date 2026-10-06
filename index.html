@@ -1,0 +1,30 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Consulta Eleições 2026 · Mato Grosso · V01.2</title><link rel="stylesheet" href="style.css"></head><body>
+<header><div class="wrap"><div><div class="eyebrow">MATO GROSSO · ELEIÇÕES 2026</div><h1><span class="mark">★</span> Consulta Eleitoral 2026</h1><p>Votação nominal por candidato e município.</p></div><div class="badge">1º turno · TSE</div></div></header>
+<main class="wrap">
+<section class="navline"><button id="home">⌂ HOME</button><button id="voltar" class="hidden">← Voltar</button></section>
+
+<section id="intro" class="card intro">
+<h2>Como deseja consultar?</h2>
+<p>Escolha uma das formas de acesso aos resultados das Eleições 2026 em Mato Grosso.</p>
+<div class="entry-grid">
+<button id="porCandidato" class="entry-card"><strong>Consulta por Candidato</strong><span>Cargo → Candidato → Municípios</span></button>
+<button id="porMunicipio" class="entry-card"><strong>Consulta por Município</strong><span>Município → Cargo → Candidatos</span></button>
+</div>
+</section>
+
+<section id="filtrosCandidato" class="filters card hidden">
+<label>Cargo<select id="cargo"><option value="">Escolha o cargo</option></select></label>
+<label>Candidato<select id="candidato" disabled><option value="">Escolha primeiro o cargo</option></select></label>
+</section>
+
+<section id="filtrosMunicipio" class="filters card hidden">
+<label>Município<select id="municipio"><option value="">Escolha o município</option></select></label>
+<label>Cargo<select id="cargoMunicipio"><option value="">Escolha o cargo</option></select></label>
+</section>
+
+<section id="toolbar" class="toolbar hidden"><input id="busca" type="search"></section>
+<section id="resumo" class="summary"></section>
+<section id="conteudo" class="card content hidden"></section>
+</main>
+<footer>Consulta Eleições 2026 · Mato Grosso · Dados extraídos dos resultados do TSE</footer>
+<script src="app.js"></script></body></html>
