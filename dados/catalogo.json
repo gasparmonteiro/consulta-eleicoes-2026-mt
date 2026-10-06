@@ -1,0 +1,38 @@
+{
+  "ano": 2026,
+  "turno": 1,
+  "uf": "MT",
+  "fonte": "Tribunal Superior Eleitoral (TSE)",
+  "cargos": [
+    {
+      "nome": "Presidente",
+      "codigo": "1",
+      "arquivo": "dados/presidente.json",
+      "candidatos": 12
+    },
+    {
+      "nome": "Governador",
+      "codigo": "3",
+      "arquivo": "dados/governador.json",
+      "candidatos": 6
+    },
+    {
+      "nome": "Senador",
+      "codigo": "5",
+      "arquivo": "dados/senador.json",
+      "candidatos": 10
+    },
+    {
+      "nome": "Deputado Federal",
+      "codigo": "6",
+      "arquivo": "dados/deputado_federal.json",
+      "candidatos": 129
+    },
+    {
+      "nome": "Deputado Estadual",
+      "codigo": "7",
+      "arquivo": "dados/deputado_estadual.json",
+      "candidatos": 255
+    }
+  ]
+}
